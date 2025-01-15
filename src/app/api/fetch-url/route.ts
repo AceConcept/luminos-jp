@@ -18,7 +18,8 @@ export async function POST(request: Request) {
     const content = $('body').text().trim();
 
     return NextResponse.json({ content });
-  } catch (error) {
+  } catch (err) {
+    console.error('Fetch error:', err);
     return NextResponse.json(
       { error: 'Failed to fetch URL' },
       { status: 500 }

@@ -45,21 +45,6 @@ export default function Home() {
       });
   }, []);
 
-  const getDefinition = async (word: string): Promise<string> => {
-    try {
-      const response = await fetch('/api/dictionary', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ word }),
-      });
-      const data = await response.json();
-      return data.definition;
-    } catch (error) {
-      console.error('Definition error:', error);
-      return 'Error fetching definition';
-    }
-  };
-
   const isKanji = (text: string): boolean => {
     return /[\u4E00-\u9FAF]/.test(text);
   };
@@ -132,6 +117,7 @@ export default function Home() {
 
           if (processedResults.length === 20) break;
         } catch (error) {
+          console.error('Analysis error:', error);
           continue;
         }
       }
