@@ -1,5 +1,15 @@
 import { NextResponse } from 'next/server';
 
+interface JishoResponse {
+  japanese: {
+    reading?: string;
+  }[];
+  senses: {
+    english_definitions: string[];
+    parts_of_speech: string[];
+  }[];
+}
+
 export async function POST(request: Request) {
   try {
     const { word } = await request.json();
@@ -7,13 +17,13 @@ export async function POST(request: Request) {
       `https://jisho.org/api/v1/search/words?keyword=${encodeURIComponent(word)}`
     );
     const data = await response.json();
-    const firstResult = data.data[0];
+    const firstResult = data.data[0] as JishoResponse;
     
     if (!firstResult) {
       return NextResponse.json({ definition: 'No definition found' });
     }
 
-    const readings = firstResult.japanese.map((j: any) => j.reading).filter(Boolean);
+    const readings = firstResult.japanese.map(j => j.reading).filter(Boolean);
     const mainReading = readings[0];
     const extraReadings = readings.length > 1 ? readings.length - 1 : 0;
 
@@ -35,7 +45,8 @@ export async function POST(request: Request) {
       extraReadings,
       partOfSpeech
     });
-  } catch (error) {
+  } catch (err) {
+    console.error('Dictionary error:', err);
     return NextResponse.json(
       { 
         definition: 'Error fetching definition',

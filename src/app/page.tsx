@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useState, useEffect } from 'react';
-const wanakana = require('wanakana');
+import * as wanakana from 'wanakana';
 import * as kuromoji from 'kuromoji';
 import { Search } from 'lucide-react';
 import WordModal from './components/WordModal';
