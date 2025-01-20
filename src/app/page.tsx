@@ -164,11 +164,12 @@ export default function Home() {
         </div>
       </header>
       <main className="mx-auto max-w-[1016px] py-8">
-        <div className="max-w-2xl mx-auto mb-12">
-          <p className="text-center mb-6 text-gray-700">
-            Enter a link to a japanese article or webpage you are<br />
+        <div className="flex flex-col items-center justify-center p-4">
+          <h1 className="text-description mb-6">
+            Enter a link to a japanese article or webpage you are
+            <br />
             using to begin. We will show you the most used words
-          </p>
+          </h1>
 
           <div className="relative w-[648px] mx-auto">
             <input
@@ -185,16 +186,16 @@ export default function Home() {
             <button
               onClick={analyzeText}
               disabled={loading || !tokenizer}
-              className="absolute right-2 top-1/2 -translate-y-1/2
-                       w-[44px] h-[44px] rounded-full
-                       bg-blue-500 hover:bg-blue-600 
-                       transition-colors disabled:bg-blue-300
+              className="absolute right-4 top-1/2 -translate-y-1/2
+                       w-[32px] h-[32px] rounded-full
+                       bg-[#D9D9D9] hover:bg-[#c4c4c4] 
+                       transition-colors disabled:bg-[#e6e6e6]
                        flex items-center justify-center"
             >
               {loading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-[#161618] border-t-transparent rounded-full animate-spin" />
               ) : (
-                <Search className="w-5 h-5 text-white" />
+                <Search className="w-4 h-4 text-[#161618]" />
               )}
             </button>
           </div>
