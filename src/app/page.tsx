@@ -201,7 +201,7 @@ export default function Home() {
           </div>
 
           <div className="mt-4 text-sm text-gray-600 text-center">
-            Example URL: https://www3.nhk.or.jp/news
+            Example: https://www3.nhk.or.jp/news
           </div>
         </div>
 
@@ -211,7 +211,7 @@ export default function Home() {
               onClick={copyAllToClipboard}
               className="flex items-center gap-2 px-6 py-3 bg-[#F2F2F2] text-[#0F0F0F] 
                          rounded-full hover:bg-[#E5E5E5] transition-colors
-                         shadow-lg text-base"
+                         shadow-[0_2px_4px_0px_rgba(16,24,40,0.06)] text-base"
             >
               <svg 
                 className="w-5 h-5"
@@ -231,13 +231,16 @@ export default function Home() {
           </div>
         )}
 
-        <div className="bg-white rounded-lg">
+        <div className="bg-white rounded-lg mt-6">
           <div className="flex flex-wrap justify-between space-y-2">
             {error && (
               <div className="text-red-500 text-center">{error}</div>
             )}
             {loading ? (
-              <div className="text-blue-500 text-center">Analyzing... Please wait.</div>
+              <div className="flex flex-col items-center justify-center gap-4 w-full">
+                <div className="dot-pulse"></div>
+                <div className="text-blue-500">Analyzing... Please wait.</div>
+              </div>
             ) : results.length > 0 ? (
               <div className="flex flex-wrap justify-between">
                 {results.map(({ word, count, reading, definition, partOfSpeech, extraReadings }, index) => (
@@ -252,7 +255,8 @@ export default function Home() {
                       <div className="flex items-center gap-2">
                         <span 
                           className={`font-bold ${word.length > 3 ? 'text-sm' : 'text-base'} 
-                                     cursor-pointer hover:text-blue-600 transition-colors`}
+                                     cursor-pointer hover:text-blue-600 transition-colors
+                                     underline underline-offset-4`}
                           onClick={() => handleWordClick({
                             word,
                             reading,
@@ -275,7 +279,12 @@ export default function Home() {
                           onClick={() => {
                             navigator.clipboard.writeText(
                               `${word} (${reading})\n${partOfSpeech || 'noun'}\n${definition}`
-                            );
+                            )
+                            .then(() => {
+                              setShowToast(true);
+                              setTimeout(() => setShowToast(false), 2000);
+                            })
+                            .catch(err => console.error('Failed to copy text: ', err));
                           }}
                           className="rounded-full"
                         >
@@ -310,9 +319,13 @@ export default function Home() {
               </div>
             ) : error ? (
               <div className="text-red-500 text-center">{error}</div>
-            ) : (
-              <div className="text-yellow-600 font-medium text-center">
+            ) : url ? (
+              <div className="text-yellow-600 font-medium text-center w-full">
                 Sorry, no Japanese words were found in this article. Please try another URL.
+              </div>
+            ) : (
+              <div className="text-gray-600 font-medium text-center w-full">
+                Enter a link to begin
               </div>
             )}
           </div>
