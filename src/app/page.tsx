@@ -62,6 +62,7 @@ export default function Home() {
 
     setLoading(true);
     setError('');
+    setResults([]); // Clear previous results
 
     try {
       const response = await fetch('/api/fetch-url', {
@@ -122,7 +123,11 @@ export default function Home() {
         }
       }
 
-      setResults(processedResults);
+      if (processedResults.length === 0) {
+        setError('no_words_found');
+      } else {
+        setResults(processedResults);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to analyze text');
       console.error('Analysis error:', err);
@@ -142,6 +147,26 @@ export default function Home() {
         setTimeout(() => setShowToast(false), 2000);
       })
       .catch(err => console.error('Failed to copy text: ', err));
+  };
+
+  const exportToAnki = () => {
+    // Create CSV content
+    const csvContent = results.map(({ word, reading, definition, partOfSpeech }) => 
+      `${word};${reading};${partOfSpeech};${definition}`
+    ).join('\n');
+
+    // Add CSV header
+    const csvWithHeader = `Front;Back;Part of Speech;Definition\n${csvContent}`;
+
+    // Create blob and download
+    const blob = new Blob([csvWithHeader], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'anki_import.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleWordClick = (word: WordResult) => {
@@ -206,7 +231,7 @@ export default function Home() {
         </div>
 
         {results.length > 0 && (
-          <div className="fixed bottom-8 right-8 z-50">
+          <div className="fixed bottom-8 right-8 z-50 flex gap-4">
             <button
               onClick={copyAllToClipboard}
               className="flex items-center gap-2 px-6 py-3 bg-[#F2F2F2] text-[#0F0F0F] 
@@ -228,15 +253,35 @@ export default function Home() {
               </svg>
               Copy Results
             </button>
+            <button
+              onClick={exportToAnki}
+              className="flex items-center gap-2 px-6 py-3 bg-[#F2F2F2] text-[#0F0F0F] 
+                         rounded-full hover:bg-[#E5E5E5] transition-colors
+                         shadow-[0_2px_4px_0px_rgba(16,24,40,0.06)] text-base"
+            >
+              <svg 
+                className="w-5 h-5"
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" 
+                />
+              </svg>
+              Export to Anki
+            </button>
           </div>
         )}
 
         <div className="bg-white rounded-lg mt-6">
           <div className="flex flex-wrap justify-between space-y-2">
-            {error && (
+            {error && error !== 'no_words_found' ? (
               <div className="text-red-500 text-center">{error}</div>
-            )}
-            {loading ? (
+            ) : loading ? (
               <div className="flex flex-col items-center justify-center gap-4 w-full">
                 <div className="dot-pulse"></div>
                 <div className="text-blue-500">Analyzing... Please wait.</div>
@@ -317,9 +362,7 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-            ) : error ? (
-              <div className="text-red-500 text-center">{error}</div>
-            ) : url ? (
+            ) : error === 'no_words_found' ? (
               <div className="text-yellow-600 font-medium text-center w-full">
                 Sorry, no Japanese words were found in this article. Please try another URL.
               </div>
