@@ -24,6 +24,22 @@ interface Token {
   surface_form: string;
 }
 
+interface FileSystemHandle {
+  createWritable(): Promise<FileSystemWritableFileStream>;
+}
+
+declare global {
+  interface Window {
+    showSaveFilePicker(options?: {
+      suggestedName?: string;
+      types?: Array<{
+        description?: string;
+        accept: Record<string, string[]>;
+      }>;
+    }): Promise<FileSystemHandle>;
+  }
+}
+
 export default function Home() {
   const [url, setUrl] = useState('');
   const [results, setResults] = useState<WordResult[]>([]);
@@ -164,7 +180,7 @@ export default function Home() {
       blob = new Blob([csvWithHeader], { type: 'text/csv;charset=utf-8;' });
 
       // Show save dialog
-      const handle = await (window as any).showSaveFilePicker({
+      const handle = await window.showSaveFilePicker({
         suggestedName: 'anki_import.csv',
         types: [{
           description: 'CSV Files',
@@ -180,9 +196,9 @@ export default function Home() {
       await writable.write(blob);
       // Close the file and write the contents to disk
       await writable.close();
-    } catch (err: any) {
+    } catch (err: unknown) {
       // If the user cancels the save dialog, we don't need to show an error
-      if (err.name !== 'AbortError' && blob) {
+      if (err instanceof Error && err.name !== 'AbortError' && blob) {
         console.error('Export error:', err);
         // Fallback to direct download if the save dialog API is not supported
         const url = URL.createObjectURL(blob);
@@ -222,7 +238,7 @@ export default function Home() {
           </h1>
 
           <p className="font-inter text-[18px] leading-[24px] tracking-[-3%] text-[#0D0C22]/70 max-w-[660px] text-center mb-[30px]">
-            Paste a link to a Japanese webpage, and we'll reveal the most used words—unlocking insights at a glance.
+            Paste a link to a Japanese webpage, and we&apos;ll reveal the most used words—unlocking insights at a glance.
           </p>
 
           <div className="w-[700px] mx-auto">
