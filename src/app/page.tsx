@@ -149,24 +149,51 @@ export default function Home() {
       .catch(err => console.error('Failed to copy text: ', err));
   };
 
-  const exportToAnki = () => {
-    // Create CSV content
-    const csvContent = results.map(({ word, reading, definition, partOfSpeech }) => 
-      `${word};${reading};${partOfSpeech};${definition}`
-    ).join('\n');
+  const exportToAnki = async () => {
+    let blob: Blob | null = null;
+    try {
+      // Create CSV content
+      const csvContent = results.map(({ word, reading, definition, partOfSpeech }) => 
+        `${word};${reading};${partOfSpeech};${definition}`
+      ).join('\n');
 
-    // Add CSV header
-    const csvWithHeader = `Front;Back;Part of Speech;Definition\n${csvContent}`;
+      // Add CSV header
+      const csvWithHeader = `Front;Back;Part of Speech;Definition\n${csvContent}`;
 
-    // Create blob and download
-    const blob = new Blob([csvWithHeader], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'anki_import.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      // Create blob
+      blob = new Blob([csvWithHeader], { type: 'text/csv;charset=utf-8;' });
+
+      // Show save dialog
+      const handle = await (window as any).showSaveFilePicker({
+        suggestedName: 'anki_import.csv',
+        types: [{
+          description: 'CSV Files',
+          accept: {
+            'text/csv': ['.csv'],
+          },
+        }],
+      });
+
+      // Create a FileSystemWritableFileStream to write to
+      const writable = await handle.createWritable();
+      // Write the contents of the file to the stream
+      await writable.write(blob);
+      // Close the file and write the contents to disk
+      await writable.close();
+    } catch (err: any) {
+      // If the user cancels the save dialog, we don't need to show an error
+      if (err.name !== 'AbortError' && blob) {
+        console.error('Export error:', err);
+        // Fallback to direct download if the save dialog API is not supported
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'anki_import.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    }
   };
 
   const handleWordClick = (word: WordResult) => {
@@ -190,39 +217,43 @@ export default function Home() {
       </header>
       <main className="mx-auto max-w-[1016px] py-8">
         <div className="flex flex-col items-center justify-center p-4">
-          <h1 className="text-description mb-6">
-            Enter a link to a japanese article or webpage you are
-            <br />
-            using to begin. We will show you the most used words
+          <h1 className="font-manrope text-[62px] leading-[74.4px] tracking-[-1.82px] text-[#0D0C22] max-w-[660px] text-center mb-[30px]">
+            Discover the Key Words in Any Japanese Article
           </h1>
 
-          <div className="relative w-[648px] mx-auto">
-            <input
-              type="text"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="Enter link here..."
-              className="w-full h-[56px] px-6 rounded-full text-[16px] 
-                       text-[#79797B] placeholder-[#79797B]
-                       border border-gray-200
-                       shadow-[0_12px_16px_-4px_rgba(16,24,40,0.08)]
-                       focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              onClick={analyzeText}
-              disabled={loading || !tokenizer}
-              className="absolute right-4 top-1/2 -translate-y-1/2
-                       w-[32px] h-[32px] rounded-full
-                       bg-[#D9D9D9] hover:bg-[#c4c4c4] 
-                       transition-colors disabled:bg-[#e6e6e6]
-                       flex items-center justify-center"
-            >
-              {loading ? (
-                <div className="w-4 h-4 border-2 border-[#161618] border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Search className="w-4 h-4 text-[#161618]" />
-              )}
-            </button>
+          <p className="font-inter text-[18px] leading-[24px] tracking-[-3%] text-[#0D0C22]/70 max-w-[660px] text-center mb-[30px]">
+            Paste a link to a Japanese webpage, and we'll reveal the most used words—unlocking insights at a glance.
+          </p>
+
+          <div className="w-[700px] mx-auto">
+            <div className="flex items-center bg-[#F3F3F6] rounded-full">
+              <input
+                type="text"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="Enter link here..."
+                className="flex-1 h-[53px] text-[14px] 
+                         text-[#0D0C22]/70 placeholder-[#0D0C22]/70
+                         border-none bg-transparent
+                         font-manrope tracking-[0%]
+                         pl-[24px] pr-[8px] py-[6px]
+                         focus:outline-none focus:ring-0"
+              />
+              <button
+                onClick={analyzeText}
+                disabled={loading || !tokenizer}
+                className="w-[40px] h-[40px] rounded-full
+                         bg-[#6565FF] hover:bg-[#6565FF]
+                         flex items-center justify-center
+                         mr-2"
+              >
+                {loading ? (
+                  <div className="w-[16px] h-[16px] border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Search className="w-[16px] h-[16px] text-white" />
+                )}
+              </button>
+            </div>
           </div>
 
           <div className="mt-4 text-sm text-gray-600 text-center">
@@ -234,9 +265,11 @@ export default function Home() {
           <div className="fixed bottom-8 right-8 z-50 flex gap-4">
             <button
               onClick={copyAllToClipboard}
-              className="flex items-center gap-2 px-6 py-3 bg-[#F2F2F2] text-[#0F0F0F] 
-                         rounded-full hover:bg-[#E5E5E5] transition-colors
-                         shadow-[0_2px_4px_0px_rgba(16,24,40,0.06)] text-base"
+              className="flex items-center gap-2 h-[40px] px-5 py-[10px]
+                       font-manrope font-medium text-[13px] text-[#000000]/60
+                       bg-[#F3F3F6] border border-[#C8C8C8]
+                       rounded-full hover:bg-[#E5E5E5] transition-colors
+                       shadow-[0_2px_4px_0px_rgba(16,24,40,0.06)]"
             >
               <svg 
                 className="w-5 h-5"
@@ -255,9 +288,11 @@ export default function Home() {
             </button>
             <button
               onClick={exportToAnki}
-              className="flex items-center gap-2 px-6 py-3 bg-[#F2F2F2] text-[#0F0F0F] 
-                         rounded-full hover:bg-[#E5E5E5] transition-colors
-                         shadow-[0_2px_4px_0px_rgba(16,24,40,0.06)] text-base"
+              className="flex items-center gap-2 h-[40px] px-5 py-[10px]
+                       font-manrope font-medium text-[13px] text-[#000000]/60
+                       bg-[#F3F3F6] border border-[#C8C8C8]
+                       rounded-full hover:bg-[#E5E5E5] transition-colors
+                       shadow-[0_2px_4px_0px_rgba(16,24,40,0.06)]"
             >
               <svg 
                 className="w-5 h-5"
@@ -366,11 +401,7 @@ export default function Home() {
               <div className="text-yellow-600 font-medium text-center w-full">
                 Sorry, no Japanese words were found in this article. Please try another URL.
               </div>
-            ) : (
-              <div className="text-gray-600 font-medium text-center w-full">
-                Enter a link to begin
-              </div>
-            )}
+            ) : null}
           </div>
         </div>
       </main>
