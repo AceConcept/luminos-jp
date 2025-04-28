@@ -36,16 +36,17 @@ export default function WordModal({
 
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-lg p-3 max-w-[500px] w-full mx-4">
+      <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-[500px] mx-auto">
         {/* Header */}
         <div className="flex justify-between items-start mb-4">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold">{word}</span>
-            <span className="text-base text-gray-600">({reading})</span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xl sm:text-2xl font-bold break-all">{word}</span>
+            <span className="text-sm sm:text-base text-gray-600">({reading})</span>
           </div>
+          
           <div className="flex items-center gap-2">
             <button 
               onClick={handleCopy}
@@ -82,7 +83,7 @@ export default function WordModal({
             <div className="text-sm text-gray-600 mb-1">
               {partOfSpeech}
             </div>
-            <div className="text-base text-[#787878] leading-relaxed">
+            <div className="text-sm sm:text-base text-[#787878] leading-relaxed">
               {definition}
             </div>
           </div>

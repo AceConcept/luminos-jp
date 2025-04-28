@@ -227,21 +227,21 @@ export default function Home() {
   return (
     <>
       <header className="h-[80px] flex items-center">
-        <div className="mx-auto max-w-[1016px] w-full">
+        <div className="container mx-auto px-4">
           <span className="text-[20px] text-[#393939]">luminos.jp</span>
         </div>
       </header>
-      <main className="mx-auto max-w-[1016px] py-8">
+      <main className="container mx-auto px-4 py-8">
         <div className="flex flex-col items-center justify-center p-4">
-          <h1 className="font-manrope text-[62px] leading-[74.4px] tracking-[-1.82px] text-[#0D0C22] max-w-[660px] text-center mb-[30px]">
+          <h1 className="font-manrope text-4xl md:text-5xl lg:text-[62px] leading-tight tracking-[-1.82px] text-[#0D0C22] max-w-[660px] text-center mb-[30px]">
             Discover the Key Words in Any Japanese Article
           </h1>
 
-          <p className="font-inter text-[18px] leading-[24px] tracking-[-3%] text-[#0D0C22]/70 max-w-[660px] text-center mb-[30px]">
+          <p className="font-inter text-base md:text-lg leading-relaxed tracking-[-3%] text-[#0D0C22]/70 max-w-[660px] text-center mb-[30px]">
             Paste a link to a Japanese webpage, and we&apos;ll reveal the most used words—unlocking insights at a glance.
           </p>
 
-          <div className="w-[700px] mx-auto">
+          <div className="w-full max-w-[700px] mx-auto">
             <div className="flex items-center bg-[#F3F3F6] rounded-full">
               <input
                 type="text"
@@ -278,10 +278,10 @@ export default function Home() {
         </div>
 
         {results.length > 0 && (
-          <div className="fixed bottom-8 right-8 z-50 flex gap-4">
+          <div className="fixed bottom-8 right-8 z-50 flex flex-col sm:flex-row gap-4">
             <button
               onClick={copyAllToClipboard}
-              className="flex items-center gap-2 h-[40px] px-5 py-[10px]
+              className="flex items-center justify-center gap-2 h-[40px] px-5 py-[10px]
                        font-manrope font-medium text-[13px] text-[#000000]/60
                        bg-[#F3F3F6] border border-[#C8C8C8]
                        rounded-full hover:bg-[#E5E5E5] transition-colors
@@ -304,7 +304,7 @@ export default function Home() {
             </button>
             <button
               onClick={exportToAnki}
-              className="flex items-center gap-2 h-[40px] px-5 py-[10px]
+              className="flex items-center justify-center gap-2 h-[40px] px-5 py-[10px]
                        font-manrope font-medium text-[13px] text-[#000000]/60
                        bg-[#F3F3F6] border border-[#C8C8C8]
                        rounded-full hover:bg-[#E5E5E5] transition-colors
@@ -329,92 +329,90 @@ export default function Home() {
         )}
 
         <div className="bg-white rounded-lg mt-6">
-          <div className="flex flex-wrap justify-between space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {error && error !== 'no_words_found' ? (
-              <div className="text-red-500 text-center">{error}</div>
+              <div className="text-red-500 text-center col-span-full">{error}</div>
             ) : loading ? (
-              <div className="flex flex-col items-center justify-center gap-4 w-full">
+              <div className="flex flex-col items-center justify-center gap-4 w-full col-span-full">
                 <div className="dot-pulse"></div>
                 <div className="text-blue-500">Analyzing... Please wait.</div>
               </div>
             ) : results.length > 0 ? (
-              <div className="flex flex-wrap justify-between">
-                {results.map(({ word, count, reading, definition, partOfSpeech, extraReadings }, index) => (
-                  <div 
-                    key={index} 
-                    className="bg-white rounded-lg p-3 border border-[#D9D9D9] 
-                             flex flex-col
-                             w-[229.5px] h-[105px] mb-4"
-                  >
-                    {/* Top row: Kanji and icons */}
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-center gap-2">
-                        <span 
-                          className={`font-bold ${word.length > 3 ? 'text-sm' : 'text-base'} 
-                                     cursor-pointer hover:text-blue-600 transition-colors
-                                     underline underline-offset-4`}
-                          onClick={() => handleWordClick({
-                            word,
-                            reading,
-                            definition,
-                            partOfSpeech,
-                            count,
-                            extraReadings
-                          })}
-                        >
-                          {word}
-                        </span>
-                        <span className={`text-gray-600 ${word.length > 3 ? 'text-[10px]' : 'text-xs'}`}>
-                          ({reading})
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-[#0F0F0F]">#{index + 1}</span>
-                        <button 
-                          onClick={() => {
-                            navigator.clipboard.writeText(
-                              `${word} (${reading})\n${partOfSpeech || 'noun'}\n${definition}`
-                            )
-                            .then(() => {
-                              setShowToast(true);
-                              setTimeout(() => setShowToast(false), 2000);
-                            })
-                            .catch(err => console.error('Failed to copy text: ', err));
-                          }}
-                          className="rounded-full"
-                        >
-                          <svg 
-                            className="w-3.5 h-3.5 text-[#0F0F0F]"
-                            fill="none" 
-                            stroke="currentColor" 
-                            viewBox="0 0 24 24"
-                          >
-                            <path 
-                              strokeLinecap="round" 
-                              strokeLinejoin="round" 
-                              strokeWidth={2} 
-                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" 
-                            />
-                          </svg>
-                        </button>
-                      </div>
+              results.map(({ word, count, reading, definition, partOfSpeech, extraReadings }, index) => (
+                <div 
+                  key={index} 
+                  className="bg-white rounded-lg p-3 border border-[#D9D9D9] 
+                           flex flex-col
+                           w-full h-[105px]"
+                >
+                  {/* Top row: Kanji and icons */}
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2">
+                      <span 
+                        className={`font-bold ${word.length > 3 ? 'text-sm' : 'text-base'} 
+                                   cursor-pointer hover:text-blue-600 transition-colors
+                                   underline underline-offset-4`}
+                        onClick={() => handleWordClick({
+                          word,
+                          reading,
+                          definition,
+                          partOfSpeech,
+                          count,
+                          extraReadings
+                        })}
+                      >
+                        {word}
+                      </span>
+                      <span className={`text-gray-600 ${word.length > 3 ? 'text-[10px]' : 'text-xs'}`}>
+                        ({reading})
+                      </span>
                     </div>
-
-                    {/* Bottom row: Part of speech and definition */}
-                    <div className="mt-auto">
-                      <div className="text-[10px] mb-0.5 text-gray-600 leading-[15px]">
-                        {partOfSpeech.split(' ').slice(0, 2).join(' ')}
-                      </div>
-                      <div className="text-[12px] text-[#787878] leading-[15px] line-clamp-2 overflow-hidden">
-                        {definition}
-                      </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-[#0F0F0F]">#{index + 1}</span>
+                      <button 
+                        onClick={() => {
+                          navigator.clipboard.writeText(
+                            `${word} (${reading})\n${partOfSpeech || 'noun'}\n${definition}`
+                          )
+                          .then(() => {
+                            setShowToast(true);
+                            setTimeout(() => setShowToast(false), 2000);
+                          })
+                          .catch(err => console.error('Failed to copy text: ', err));
+                        }}
+                        className="rounded-full"
+                      >
+                        <svg 
+                          className="w-3.5 h-3.5 text-[#0F0F0F]"
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                        >
+                          <path 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            strokeWidth={2} 
+                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" 
+                          />
+                        </svg>
+                      </button>
                     </div>
                   </div>
-                ))}
-              </div>
+
+                  {/* Bottom row: Part of speech and definition */}
+                  <div className="mt-auto">
+                    <div className="text-[10px] mb-0.5 text-gray-600 leading-[15px]">
+                      {partOfSpeech.split(' ').slice(0, 2).join(' ')}
+                    </div>
+                    <div className="text-[12px] text-[#787878] leading-[15px] line-clamp-2 overflow-hidden">
+                      {definition}
+                    </div>
+                  </div>
+                </div>
+              ))
             ) : error === 'no_words_found' ? (
-              <div className="text-yellow-600 font-medium text-center w-full">
+              <div className="text-yellow-600 font-medium text-center w-full col-span-full">
                 Sorry, no Japanese words were found in this article. Please try another URL.
               </div>
             ) : null}
